@@ -161,7 +161,7 @@ function App() {
         id: 101,
         name: "Sai Gopal",
         department: "IT",
-        designation: "Frontend Developer",
+        designation: "Java Full Stack Developer",
         email: "saigopal@gmail.com",
         status: "Active",
       },
@@ -183,10 +183,10 @@ function App() {
       },
       {
         id: 104,
-        name: "Kiran",
+        name: "Ajay Kumar",
         department: "Sales",
         designation: "Sales Executive",
-        email: "kiran@gmail.com",
+        email: "Ajay@gmail.com",
         status: "Active",
       },
     ]);

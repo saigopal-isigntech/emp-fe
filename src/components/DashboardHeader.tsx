@@ -1,9 +1,12 @@
+
 import {
   FaUsers,
   FaUserCheck,
   FaUserTimes,
   FaBuilding,
 } from "react-icons/fa";
+import { useNavigate } from "react-router-dom";
+
 
 interface DashboardHeaderProps {
   totalEmployees: number;
@@ -20,6 +23,7 @@ function DashboardHeader({
   departments,
   openForm,
 }: DashboardHeaderProps) {
+  const navigate = useNavigate();
   return (
     <>
       {/* Welcome Section */}
@@ -29,9 +33,21 @@ function DashboardHeader({
           <p>Manage your employees efficiently from one place.</p>
         </div>
 
-        <button className="add-btn" onClick={openForm}>
+        {/* <button className="add-btn" onClick={openForm}>
           + Add Employee
-        </button>
+        </button> */}
+        {/* <button
+      className="add-btn"
+      onClick={() => navigate("/employees")}
+    >
+      + Add Employee
+    </button> */}
+    <button
+  className="add-btn"
+  onClick={() => navigate("/employees")}
+>
+  + Add Employee
+</button>
       </div>
 
       {/* Statistics Cards */}

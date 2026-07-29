@@ -1,73 +1,6 @@
+// import { useState } from "react";
 // import type { Employee } from "../App";
-// import DashboardHeader from "../components/DashboardHeader";
-// import SearchBar from "../components/SearchBar";
-// import FilterPanel from "../components/FilterPanel";
-// import EmployeeForm from "../components/EmployeeForm";
-// import EmployeeList from "../components/EmployeeList";
 
-// interface DashboardProps {
-//   employees: Employee[];
-//   totalEmployees: number;
-//   addEmployee: (employee: Employee) => void;
-//   deleteEmployee: (id: number) => void;
-//   toggleStatus: (id: number) => void;
-
-//   search: string;
-//   setSearch: (value: string) => void;
-
-//   departmentFilter: string;
-//   setDepartmentFilter: (value: string) => void;
-
-//   statusFilter: string;
-//   setStatusFilter: (value: string) => void;
-// }
-
-// function Dashboard({
-//   employees,
-//   totalEmployees,
-//   addEmployee,
-//   deleteEmployee,
-//   toggleStatus,
-//   search,
-//   setSearch,
-//   departmentFilter,
-//   setDepartmentFilter,
-//   statusFilter,
-//   setStatusFilter,
-// }: DashboardProps) {
-//   return (
-//     <main className="dashboard">
-//       <DashboardHeader totalEmployees={totalEmployees} />
-
-//       <SearchBar
-//         search={search}
-//         setSearch={setSearch}
-//       />
-
-//       <FilterPanel
-//         department={departmentFilter}
-//         setDepartment={setDepartmentFilter}
-//         status={statusFilter}
-//         setStatus={setStatusFilter}
-//       />
-
-//       <EmployeeForm
-//         addEmployee={addEmployee}
-//       />
-
-//       <EmployeeList
-//         employees={employees}
-//         deleteEmployee={deleteEmployee}
-//         toggleStatus={toggleStatus}
-//       />
-//     </main>
-//   );
-// }
-
-// export default Dashboard;
-
-
-// import type { Employee } from "../App";
 // import DashboardHeader from "../components/DashboardHeader";
 // import SearchBar from "../components/SearchBar";
 // import FilterPanel from "../components/FilterPanel";
@@ -95,20 +28,44 @@
 // function Dashboard({
 //   employees,
 //   totalEmployees,
+
 //   addEmployee,
 //   deleteEmployee,
 //   toggleStatus,
+
 //   search,
 //   setSearch,
+
 //   departmentFilter,
 //   setDepartmentFilter,
+
 //   statusFilter,
 //   setStatusFilter,
 // }: DashboardProps) {
+//   const [showForm, setShowForm] = useState(false);
+
+//   const activeEmployees = employees.filter(
+//     (emp) => emp.status === "Active"
+//   ).length;
+
+//   const inactiveEmployees = employees.filter(
+//     (emp) => emp.status === "Inactive"
+//   ).length;
+
+//   const departments = new Set(
+//     employees.map((emp) => emp.department)
+//   ).size;
+
 //   return (
 //     <main className="dashboard">
 
-//       <DashboardHeader totalEmployees={totalEmployees} />
+//       <DashboardHeader
+//         totalEmployees={totalEmployees}
+//         activeEmployees={activeEmployees}
+//         inactiveEmployees={inactiveEmployees}
+//         departments={departments}
+//         openForm={() => setShowForm(true)}
+//       />
 
 //       <div className="toolbar">
 
@@ -126,9 +83,29 @@
 
 //       </div>
 
-//       <EmployeeForm
-//         addEmployee={addEmployee}
-//       />
+//       {showForm && (
+//         <div className="modal-overlay">
+
+//           <div className="modal">
+
+//             <button
+//               className="close-btn"
+//               onClick={() => setShowForm(false)}
+//             >
+//               ✕
+//             </button>
+
+//             <EmployeeForm
+//               addEmployee={(employee) => {
+//                 addEmployee(employee);
+//                 setShowForm(false);
+//               }}
+//             />
+
+//           </div>
+
+//         </div>
+//       )}
 
 //       <EmployeeList
 //         employees={employees}
@@ -143,14 +120,9 @@
 // export default Dashboard;
 
 
-import { useState } from "react";
-import type { Employee } from "../App";
 
 import DashboardHeader from "../components/DashboardHeader";
-import SearchBar from "../components/SearchBar";
-import FilterPanel from "../components/FilterPanel";
-import EmployeeForm from "../components/EmployeeForm";
-import EmployeeList from "../components/EmployeeList";
+import type { Employee } from "../App";
 
 interface DashboardProps {
   employees: Employee[];
@@ -173,22 +145,7 @@ interface DashboardProps {
 function Dashboard({
   employees,
   totalEmployees,
-
-  addEmployee,
-  deleteEmployee,
-  toggleStatus,
-
-  search,
-  setSearch,
-
-  departmentFilter,
-  setDepartmentFilter,
-
-  statusFilter,
-  setStatusFilter,
 }: DashboardProps) {
-  const [showForm, setShowForm] = useState(false);
-
   const activeEmployees = employees.filter(
     (emp) => emp.status === "Active"
   ).length;
@@ -202,63 +159,48 @@ function Dashboard({
   ).size;
 
   return (
-    <main className="dashboard">
-
+    <>
       <DashboardHeader
         totalEmployees={totalEmployees}
         activeEmployees={activeEmployees}
         inactiveEmployees={inactiveEmployees}
         departments={departments}
-        openForm={() => setShowForm(true)}
+        openForm={() => {}}
       />
 
-      <div className="toolbar">
+      <div
+        style={{
+          marginTop: "40px",
+          background: "#fff",
+          padding: "30px",
+          borderRadius: "16px",
+          boxShadow: "0 8px 20px rgba(0,0,0,.08)",
+        }}
+      >
+        <h2>Dashboard Overview</h2>
 
-        <SearchBar
-          search={search}
-          setSearch={setSearch}
-        />
+        <br />
 
-        <FilterPanel
-          department={departmentFilter}
-          setDepartment={setDepartmentFilter}
-          status={statusFilter}
-          setStatus={setStatusFilter}
-        />
+        <p>
+          Welcome to the Employee Management System.
+        </p>
 
+        <br />
+
+        <p>
+          Use the sidebar to navigate between Dashboard,
+          Employee List .
+        </p>
+
+        <br />
+
+        {/* <p>
+          This dashboard displays employee statistics,
+          while employee management is available on the
+          Employee List page.
+        </p> */}
       </div>
-
-      {showForm && (
-        <div className="modal-overlay">
-
-          <div className="modal">
-
-            <button
-              className="close-btn"
-              onClick={() => setShowForm(false)}
-            >
-              ✕
-            </button>
-
-            <EmployeeForm
-              addEmployee={(employee) => {
-                addEmployee(employee);
-                setShowForm(false);
-              }}
-            />
-
-          </div>
-
-        </div>
-      )}
-
-      <EmployeeList
-        employees={employees}
-        deleteEmployee={deleteEmployee}
-        toggleStatus={toggleStatus}
-      />
-
-    </main>
+    </>
   );
 }
 

@@ -10,36 +10,31 @@
 //   department: string;
 //   designation: string;
 //   email: string;
-//   status: string;
+//   status: "Active" | "Inactive";
 // }
 
 // function App() {
-//   // Employee State
 //   const [employees, setEmployees] = useState<Employee[]>([]);
 
-//   // Search State
 //   const [search, setSearch] = useState("");
-
-//   // Filter States
 //   const [departmentFilter, setDepartmentFilter] = useState("");
 //   const [statusFilter, setStatusFilter] = useState("");
 
-//   // Load Sample Data on Component Mount
 //   useEffect(() => {
 //     setEmployees([
 //       {
 //         id: 101,
 //         name: "Sai Gopal",
 //         department: "IT",
-//         designation: "Frontend Developer",
-//         email: "sai@gmail.com",
+//         designation: "Java Full Stack Developer",
+//         email: "saigopal@gmail.com",
 //         status: "Active",
 //       },
 //       {
 //         id: 102,
-//         name: "Rahul",
+//         name: "Rahul Sharma",
 //         department: "HR",
-//         designation: "Manager",
+//         designation: "HR Manager",
 //         email: "rahul@gmail.com",
 //         status: "Inactive",
 //       },
@@ -53,31 +48,26 @@
 //       },
 //       {
 //         id: 104,
-//         name: "Kiran",
+//         name: "Ajay Kumar",
 //         department: "Sales",
 //         designation: "Sales Executive",
-//         email: "kiran@gmail.com",
+//         email: "Ajay@gmail.com",
 //         status: "Active",
 //       },
 //     ]);
 //   }, []);
 
-//   // Add Employee
 //   const addEmployee = (employee: Employee) => {
-//     setEmployees((prevEmployees) => [...prevEmployees, employee]);
+//     setEmployees((prev) => [...prev, employee]);
 //   };
 
-//   // Delete Employee
 //   const deleteEmployee = (id: number) => {
-//     setEmployees((prevEmployees) =>
-//       prevEmployees.filter((emp) => emp.id !== id)
-//     );
+//     setEmployees((prev) => prev.filter((emp) => emp.id !== id));
 //   };
 
-//   // Toggle Employee Status
 //   const toggleStatus = (id: number) => {
-//     setEmployees((prevEmployees) =>
-//       prevEmployees.map((emp) =>
+//     setEmployees((prev) =>
+//       prev.map((emp) =>
 //         emp.id === id
 //           ? {
 //               ...emp,
@@ -88,28 +78,29 @@
 //     );
 //   };
 
-//   // Search + Filter Logic
 //   const filteredEmployees = employees.filter((employee) => {
-//     const matchesSearch =
+//     const searchMatch =
 //       employee.name.toLowerCase().includes(search.toLowerCase()) ||
 //       employee.id.toString().includes(search);
 
-//     const matchesDepartment =
+//     const departmentMatch =
 //       departmentFilter === "" ||
 //       employee.department === departmentFilter;
 
-//     const matchesStatus =
+//     const statusMatch =
 //       statusFilter === "" ||
 //       employee.status === statusFilter;
 
-//     return matchesSearch && matchesDepartment && matchesStatus;
+//     return searchMatch && departmentMatch && statusMatch;
 //   });
 
 //   return (
 //     <div className="app">
+
 //       <Header />
 
-//       <div className="container">
+//       <div className="main-layout">
+
 //         <Sidebar />
 
 //         <Dashboard
@@ -125,7 +116,9 @@
 //           statusFilter={statusFilter}
 //           setStatusFilter={setStatusFilter}
 //         />
+
 //       </div>
+
 //     </div>
 //   );
 // }
@@ -134,9 +127,15 @@
 
 
 import { useEffect, useState } from "react";
-import Header from "./components/Header";
-import Sidebar from "./components/Sidebar";
+import { Routes, Route } from "react-router-dom";
+
+import MainLayout from "./layouts/MainLayout";
+
 import Dashboard from "./pages/Dashboard";
+import EmployeeListPage from "./pages/EmployeeListPage";
+import EmployeeDetails from "./pages/EmployeeDetails";
+import PageNotFound from "./pages/PageNotFound";
+
 import "./App.css";
 
 export interface Employee {
@@ -186,7 +185,7 @@ function App() {
         name: "Ajay Kumar",
         department: "Sales",
         designation: "Sales Executive",
-        email: "Ajay@gmail.com",
+        email: "ajay@gmail.com",
         status: "Active",
       },
     ]);
@@ -205,9 +204,10 @@ function App() {
       prev.map((emp) =>
         emp.id === id
           ? {
-              ...emp,
-              status: emp.status === "Active" ? "Inactive" : "Active",
-            }
+            ...emp,
+            status:
+              emp.status === "Active" ? "Inactive" : "Active",
+          }
           : emp
       )
     );
@@ -230,31 +230,57 @@ function App() {
   });
 
   return (
-    <div className="app">
-
-      <Header />
-
-      <div className="main-layout">
-
-        <Sidebar />
-
-        <Dashboard
-          employees={filteredEmployees}
-          totalEmployees={employees.length}
-          addEmployee={addEmployee}
-          deleteEmployee={deleteEmployee}
-          toggleStatus={toggleStatus}
-          search={search}
-          setSearch={setSearch}
-          departmentFilter={departmentFilter}
-          setDepartmentFilter={setDepartmentFilter}
-          statusFilter={statusFilter}
-          setStatusFilter={setStatusFilter}
+    <Routes>
+      <Route element={<MainLayout />}>
+        <Route
+          path="/"
+          element={
+            <Dashboard
+              employees={filteredEmployees}
+              totalEmployees={employees.length}
+              addEmployee={addEmployee}
+              deleteEmployee={deleteEmployee}
+              toggleStatus={toggleStatus}
+              search={search}
+              setSearch={setSearch}
+              departmentFilter={departmentFilter}
+              setDepartmentFilter={setDepartmentFilter}
+              statusFilter={statusFilter}
+              setStatusFilter={setStatusFilter}
+            />
+          }
         />
 
-      </div>
+        <Route
+          path="/employees"
+          element={
+            <EmployeeListPage
+              employees={filteredEmployees}
+              addEmployee={addEmployee}
+              deleteEmployee={deleteEmployee}
+              toggleStatus={toggleStatus}
+              search={search}
+              setSearch={setSearch}
+              departmentFilter={departmentFilter}
+              setDepartmentFilter={setDepartmentFilter}
+              statusFilter={statusFilter}
+              setStatusFilter={setStatusFilter}
+            />
+          }
+        />
 
-    </div>
+        <Route
+          path="/employees/:id"
+          element={
+            <EmployeeDetails
+              employees={employees}
+            />
+          }
+        />
+      </Route>
+
+      <Route path="*" element={<PageNotFound />} />
+    </Routes>
   );
 }
 

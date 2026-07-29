@@ -44,6 +44,7 @@ select{
 
 .main-layout{
     display:flex;
+    margin-top:75px;
     flex:1;
 }
 
@@ -53,15 +54,17 @@ select{
 
 .header{
     height:75px;
+    width:100%;
     background:white;
     display:flex;
     justify-content:space-between;
     align-items:center;
     padding:0 35px;
     box-shadow:0 4px 15px rgba(0,0,0,.08);
-    position:sticky;
+    position:fixed;
     top:0;
-    z-index:100;
+    left:0;
+    z-index:1000;
 }
 
 .logo h2{
@@ -110,14 +113,15 @@ select{
 ========================= */
 
 .sidebar{
+    position:fixed;
+    top:75px;
+    left:0;
     width:250px;
+    height:calc(100vh - 75px);
     background:#0f172a;
     color:white;
-    min-height:calc(100vh - 75px);
     padding:30px 20px;
-    display:flex;
-    flex-direction:column;
-    justify-content:space-between;
+    overflow-y:auto;
 }
 
 .sidebar-title{
@@ -129,57 +133,46 @@ select{
 
 .sidebar ul{
     list-style:none;
+    padding:0;
+    margin:0;
 }
 
 .sidebar li{
+    margin-bottom:12px;
+}
+
+.sidebar a{
     display:flex;
     align-items:center;
-    gap:15px;
-    padding:15px;
+    width:100%;
+    padding:14px 16px;
     border-radius:12px;
-    margin-bottom:12px;
-    transition:.3s;
-    cursor:pointer;
+    color:white;
+    text-decoration:none;
     font-size:16px;
     font-weight:500;
-}
-
-.sidebar li:hover{
-    background:#2563eb;
-}
-
-.sidebar .active{
-    background:#2563eb;
-}
-
-.logout-btn{
-    width:100%;
-    border:none;
-    background:#ef4444;
-    color:white;
-    padding:14px;
-    border-radius:10px;
-    font-size:16px;
-    display:flex;
-    justify-content:center;
-    align-items:center;
-    gap:10px;
     transition:.3s;
 }
 
-.logout-btn:hover{
-    background:#dc2626;
+.sidebar a:hover{
+    background:#2563eb;
 }
 
+.sidebar a.active-link{
+    background:#2563eb;
+    color:white;
+}
 /* =========================
    DASHBOARD
 ========================= */
 
 .dashboard{
+    margin-left:250px;
     flex:1;
     padding:35px;
+    min-height:calc(100vh - 75px);
+    overflow-y:auto;
 }
-
 /* =========================
    WELCOME SECTION
 ========================= */
@@ -758,3 +751,4 @@ select{
     }
 
 }
+

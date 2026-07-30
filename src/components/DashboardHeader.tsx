@@ -21,7 +21,7 @@ function DashboardHeader({
   activeEmployees,
   inactiveEmployees,
   departments,
-  openForm,
+  // openForm,
 }: DashboardHeaderProps) {
   const navigate = useNavigate();
   return (

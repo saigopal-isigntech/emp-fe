@@ -171,7 +171,8 @@ select{
     flex:1;
     padding:35px;
     min-height:calc(100vh - 75px);
-    overflow-y:auto;
+    overflow-x:hidden;
+    overflow-y:visible;
 }
 /* =========================
    WELCOME SECTION

@@ -1,4 +1,3 @@
-
 import {
   FaUsers,
   FaUserCheck,
@@ -33,7 +32,7 @@ function DashboardHeader({
           <p>Manage your employees efficiently from one place.</p>
         </div>
 
-        {/* <button className="add-btn" onClick={openForm}>
+        {/* <button className="add-btn" onClick={openForm}>  // to open the form when button is clicked
           + Add Employee
         </button> */}
         {/* <button

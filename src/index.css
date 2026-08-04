@@ -1,4 +1,4 @@
-body{
+/* body{
 background:#f4f4f4;
 }
 html{
@@ -7,4 +7,20 @@ html{
 
 body{
     overflow-x:hidden;
+} */
+
+
+@import "tailwindcss";
+
+html {
+  scrollbar-gutter: stable;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+  background: #f4f4f4;
+  overflow-x: hidden;
+  font-family: Inter, system-ui, sans-serif;
 }

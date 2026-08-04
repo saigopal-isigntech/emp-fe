@@ -88,6 +88,129 @@
 // export default EmployeeCard;
 
 
+// import type { Employee } from "../types/Employee";
+// import { useNavigate } from "react-router-dom";
+// import { useEmployeeContext } from "../context/EmployeeContext";
+
+// import {
+//   FaUserCircle,
+//   FaEnvelope,
+//   FaBuilding,
+//   FaBriefcase,
+//   FaTrash,
+//   FaSyncAlt,
+//   FaEye,
+// } from "react-icons/fa";
+
+// import {
+//   Card,
+//   CardContent,
+// } from "@/components/ui/card";
+
+// import { Button } from "@/components/ui/button";
+
+// interface EmployeeCardProps {
+//   employee: Employee;
+// }
+
+// function EmployeeCard({ employee }: EmployeeCardProps) {
+//   const navigate = useNavigate();
+
+//   const { deleteEmployee, toggleStatus } =
+//     useEmployeeContext();
+
+//   return (
+//     <Card className="transition-all duration-300 hover:-translate-y-1 hover:shadow-xl">
+//       <CardContent className="space-y-6 p-6">
+//         {/* Header */}
+//         <div className="flex items-center gap-4">
+//           <FaUserCircle className="text-6xl text-blue-600" />
+
+//           <div className="flex-1">
+//             <h2 className="text-xl font-bold text-slate-800">
+//               {employee.name}
+//             </h2>
+
+//             <span
+//               className={`mt-2 inline-flex rounded-full px-3 py-1 text-xs font-semibold ${
+//                 employee.status === "Active"
+//                   ? "bg-green-100 text-green-700"
+//                   : "bg-red-100 text-red-700"
+//               }`}
+//             >
+//               {employee.status}
+//             </span>
+//           </div>
+//         </div>
+
+//         {/* Employee Information */}
+//         <div className="space-y-3 text-sm text-slate-600">
+//           <div className="flex items-center gap-3">
+//             <FaBriefcase className="text-slate-500" />
+
+//             <span>{employee.designation}</span>
+//           </div>
+
+//           <div className="flex items-center gap-3">
+//             <FaBuilding className="text-slate-500" />
+
+//             <span>{employee.department}</span>
+//           </div>
+
+//           <div className="flex items-center gap-3">
+//             <FaEnvelope className="text-slate-500" />
+
+//             <span>{employee.email}</span>
+//           </div>
+
+//           <div>
+//             <span className="font-semibold">
+//               Employee ID :
+//             </span>{" "}
+//             {employee.id}
+//           </div>
+//         </div>
+
+//         {/* Action Buttons */}
+//         <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+//           <Button
+//             variant="outline"
+//             onClick={() =>
+//               toggleStatus(employee.id)
+//             }
+//           >
+//             <FaSyncAlt className="mr-2" />
+//             Toggle
+//           </Button>
+
+//           <Button
+//             variant="destructive"
+//             onClick={() =>
+//               deleteEmployee(employee.id)
+//             }
+//           >
+//             <FaTrash className="mr-2" />
+//             Delete
+//           </Button>
+
+//           <Button
+//             onClick={() =>
+//               navigate(`/employees/${employee.id}`)
+//             }
+//           >
+//             <FaEye className="mr-2" />
+//             View
+//           </Button>
+//         </div>
+//       </CardContent>
+//     </Card>
+//   );
+// }
+
+// export default EmployeeCard;
+
+
+
 import type { Employee } from "../types/Employee";
 import { useNavigate } from "react-router-dom";
 import { useEmployeeContext } from "../context/EmployeeContext";
@@ -100,13 +223,10 @@ import {
   FaTrash,
   FaSyncAlt,
   FaEye,
+  FaIdBadge,
 } from "react-icons/fa";
 
-import {
-  Card,
-  CardContent,
-} from "@/components/ui/card";
-
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 
 interface EmployeeCardProps {
@@ -116,92 +236,101 @@ interface EmployeeCardProps {
 function EmployeeCard({ employee }: EmployeeCardProps) {
   const navigate = useNavigate();
 
-  const { deleteEmployee, toggleStatus } =
-    useEmployeeContext();
+  const { deleteEmployee, toggleStatus } = useEmployeeContext();
 
   return (
-    <Card className="transition-all duration-300 hover:-translate-y-1 hover:shadow-xl">
-      <CardContent className="space-y-6 p-6">
-        {/* Header */}
-        <div className="flex items-center gap-4">
-          <FaUserCircle className="text-6xl text-blue-600" />
+    <Card className="overflow-hidden border-0 bg-white shadow-md transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl">
+      <CardContent className="p-0">
 
-          <div className="flex-1">
-            <h2 className="text-xl font-bold text-slate-800">
-              {employee.name}
-            </h2>
+        {/* Top Section */}
+        <div className="bg-gradient-to-r from-blue-600 to-indigo-600 p-6 text-white">
 
-            <span
-              className={`mt-2 inline-flex rounded-full px-3 py-1 text-xs font-semibold ${
-                employee.status === "Active"
-                  ? "bg-green-100 text-green-700"
-                  : "bg-red-100 text-red-700"
-              }`}
-            >
-              {employee.status}
-            </span>
+          <div className="flex items-center gap-4">
+
+            <div className="rounded-full bg-white/20 p-2">
+              <FaUserCircle className="text-6xl" />
+            </div>
+
+            <div className="flex-1">
+              <h2 className="text-xl font-bold">
+                {employee.name}
+              </h2>
+
+              <p className="text-sm text-blue-100">
+                {employee.designation}
+              </p>
+
+              <span
+                className={`mt-3 inline-flex rounded-full px-3 py-1 text-xs font-semibold ${
+                  employee.status === "Active"
+                    ? "bg-green-500 text-white"
+                    : "bg-red-500 text-white"
+                }`}
+              >
+                {employee.status}
+              </span>
+            </div>
+
           </div>
+
         </div>
 
-        {/* Employee Information */}
-        <div className="space-y-3 text-sm text-slate-600">
-          <div className="flex items-center gap-3">
-            <FaBriefcase className="text-slate-500" />
+        {/* Details */}
+        <div className="space-y-4 p-6">
 
+          <div className="flex items-center gap-3 text-slate-700">
+            <FaBriefcase className="text-blue-600" />
             <span>{employee.designation}</span>
           </div>
 
-          <div className="flex items-center gap-3">
-            <FaBuilding className="text-slate-500" />
-
+          <div className="flex items-center gap-3 text-slate-700">
+            <FaBuilding className="text-purple-600" />
             <span>{employee.department}</span>
           </div>
 
-          <div className="flex items-center gap-3">
-            <FaEnvelope className="text-slate-500" />
-
-            <span>{employee.email}</span>
+          <div className="flex items-center gap-3 text-slate-700">
+            <FaEnvelope className="text-green-600" />
+            <span className="truncate">{employee.email}</span>
           </div>
 
-          <div>
-            <span className="font-semibold">
-              Employee ID :
-            </span>{" "}
-            {employee.id}
+          <div className="flex items-center gap-3 text-slate-700">
+            <FaIdBadge className="text-orange-600" />
+            <span>ID : {employee.id}</span>
           </div>
+
+          <div className="border-t pt-5">
+
+            <div className="grid grid-cols-3 gap-3">
+
+              <Button
+                variant="outline"
+                className="hover:bg-blue-50"
+                onClick={() => toggleStatus(employee.id)}
+              >
+                <FaSyncAlt />
+              </Button>
+
+              <Button
+                variant="destructive"
+                onClick={() => deleteEmployee(employee.id)}
+              >
+                <FaTrash />
+              </Button>
+
+              <Button
+                onClick={() =>
+                  navigate(`/employees/${employee.id}`)
+                }
+              >
+                <FaEye />
+              </Button>
+
+            </div>
+
+          </div>
+
         </div>
 
-        {/* Action Buttons */}
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-          <Button
-            variant="outline"
-            onClick={() =>
-              toggleStatus(employee.id)
-            }
-          >
-            <FaSyncAlt className="mr-2" />
-            Toggle
-          </Button>
-
-          <Button
-            variant="destructive"
-            onClick={() =>
-              deleteEmployee(employee.id)
-            }
-          >
-            <FaTrash className="mr-2" />
-            Delete
-          </Button>
-
-          <Button
-            onClick={() =>
-              navigate(`/employees/${employee.id}`)
-            }
-          >
-            <FaEye className="mr-2" />
-            View
-          </Button>
-        </div>
       </CardContent>
     </Card>
   );

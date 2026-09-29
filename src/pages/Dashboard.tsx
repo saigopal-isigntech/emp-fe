@@ -1,314 +1,197 @@
-// import DashboardHeader from "../components/DashboardHeader";
-// import { useEmployeeContext } from "../context/EmployeeContext";
-
-// function Dashboard() {
-//   const { employees } = useEmployeeContext();
-
-//   const totalEmployees = employees.length;
-
-//   const activeEmployees = employees.filter(
-//     (emp) => emp.status === "Active"
-//   ).length;
-
-//   const inactiveEmployees = employees.filter(
-//     (emp) => emp.status === "Inactive"
-//   ).length;
-
-//   const departments = new Set(
-//     employees.map((emp) => emp.department)
-//   ).size;
-
-//   return (
-//     <>
-//       <DashboardHeader
-//         totalEmployees={totalEmployees}
-//         activeEmployees={activeEmployees}
-//         inactiveEmployees={inactiveEmployees}
-//         departments={departments}
-//         openForm={() => {}}
-//       />
-
-//       <div
-//         style={{
-//           marginTop: "40px",
-//           background: "#fff",
-//           padding: "30px",
-//           borderRadius: "16px",
-//           boxShadow: "0 8px 20px rgba(0,0,0,.08)",
-//         }}
-//       >
-//         <h2>Dashboard Overview</h2>
-
-//         <br />
-
-//         <p>
-//           Welcome to the Employee Management System.
-//         </p>
-
-//         <br />
-
-//         <p>
-//           Use the sidebar to navigate between Dashboard and Employee List.
-//         </p>
-//       </div>
-//     </>
-//   );
-// }
-
-// export default Dashboard;
-
-
-
-// import DashboardHeader from "../components/DashboardHeader";
-// import { useEmployeeContext } from "../context/EmployeeContext";
-
-// import {
-//   Card,
-//   CardContent,
-//   CardDescription,
-//   CardHeader,
-//   CardTitle,
-// } from "@/components/ui/card";
-
-// function Dashboard() {
-//   const { employees } = useEmployeeContext();
-
-//   const totalEmployees = employees.length;
-
-//   const activeEmployees = employees.filter(
-//     (emp) => emp.status === "Active"
-//   ).length;
-
-//   const inactiveEmployees = employees.filter(
-//     (emp) => emp.status === "Inactive"
-//   ).length;
-
-//   const departments = new Set(
-//     employees.map((emp) => emp.department)
-//   ).size;
-
-//   return (
-//     <div className="space-y-8">
-//       <DashboardHeader
-//         totalEmployees={totalEmployees}
-//         activeEmployees={activeEmployees}
-//         inactiveEmployees={inactiveEmployees}
-//         departments={departments}
-//         openForm={() => {}}
-//       />
-
-//       <Card className="shadow-sm">
-//         <CardHeader>
-//           <CardTitle className="text-2xl">
-//             Dashboard Overview
-//           </CardTitle>
-
-//           <CardDescription>
-//             Employee Management System Summary
-//           </CardDescription>
-//         </CardHeader>
-
-//         <CardContent className="space-y-4">
-//           <p className="text-slate-600 leading-7">
-//             Welcome to the Employee Management System.
-//             This dashboard provides a centralized view of
-//             your employees and organization.
-//           </p>
-
-//           <p className="text-slate-600 leading-7">
-//             Use the navigation menu to manage employees,
-//             update information, and monitor workforce
-//             statistics in real time.
-//           </p>
-
-//           <div className="grid grid-cols-1 gap-4 pt-4 md:grid-cols-2">
-//             <div className="rounded-lg border bg-slate-50 p-5">
-//               <h3 className="text-lg font-semibold text-slate-800">
-//                 Employee Management
-//               </h3>
-
-//               <p className="mt-2 text-sm text-slate-500">
-//                 Add, edit, delete, search and filter employee
-//                 records efficiently.
-//               </p>
-//             </div>
-
-//             <div className="rounded-lg border bg-slate-50 p-5">
-//               <h3 className="text-lg font-semibold text-slate-800">
-//                 Dashboard Analytics
-//               </h3>
-
-//               <p className="mt-2 text-sm text-slate-500">
-//                 Monitor employee statistics including active,
-//                 inactive employees and department distribution.
-//               </p>
-//             </div>
-//           </div>
-//         </CardContent>
-//       </Card>
-//     </div>
-//   );
-// }
-
-// export default Dashboard;
-
-
-import DashboardHeader from "../components/DashboardHeader";
-import { useEmployeeContext } from "../context/EmployeeContext";
-
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-
-import {
-  FaUsers,
-  FaChartLine,
-  FaUserCheck,
-  FaBuilding,
-} from "react-icons/fa";
+import { useEffect, useState } from 'react';
+import DashboardHeader from '../components/DashboardHeader';
+import { useEmployeeContext } from '../context/EmployeeContext';
+import { useAuth } from '../context/AuthContext';
+import { getDashboardSummary } from '../api/dashboardApi';
+import { checkIn, checkOut, getMyAttendance } from '../api/attendanceApi';
+import type { DashboardSummary } from '../types/api';
+import { Link } from 'react-router-dom';
 
 function Dashboard() {
-  const { employees } = useEmployeeContext();
+  const { employees, departments } = useEmployeeContext();
+  const { currentRole, user } = useAuth();
+  const isAdminOrHr = currentRole === 'ADMIN' || currentRole === 'HR';
 
-  const totalEmployees = employees.length;
+  const [summary, setSummary] = useState<DashboardSummary>({
+    totalEmployees: 0,
+    activeEmployees: 0,
+    inactiveEmployees: 0,
+    totalDepartments: 0,
+    presentToday: 0,
+    absentToday: 0,
+    halfDayToday: 0,
+    pendingLeaveRequests: 0,
+    approvedLeaveRequests: 0,
+    rejectedLeaveRequests: 0,
+    pendingLeaves: 0,
+    employeesOnLeave: 0,
+  });
+  const [loading, setLoading] = useState(true);
 
-  const activeEmployees = employees.filter(
-    (emp) => emp.status === "Active"
-  ).length;
+  const [myAttendance, setMyAttendance] = useState<any[]>([]);
+  const [punchMsg, setPunchMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+  const [punching, setPunching] = useState(false);
 
-  const inactiveEmployees = employees.filter(
-    (emp) => emp.status === "Inactive"
-  ).length;
+  useEffect(() => {
+    async function loadData() {
+      setLoading(true);
+      try {
+        if (isAdminOrHr) {
+          const live = await getDashboardSummary();
+          setSummary(live);
+        } else {
+          const logs = await getMyAttendance();
+          setMyAttendance(logs || []);
+        }
+      } catch {
+        const activeCount = employees.filter((e) => e.status === 'ACTIVE').length;
+        setSummary({
+          totalEmployees: employees.length,
+          activeEmployees: activeCount,
+          inactiveEmployees: employees.length - activeCount,
+          totalDepartments: departments.length,
+          presentToday: 0,
+          absentToday: 0,
+          halfDayToday: 0,
+          pendingLeaveRequests: 0,
+          approvedLeaveRequests: 0,
+          rejectedLeaveRequests: 0,
+          pendingLeaves: 0,
+          employeesOnLeave: 0,
+        });
+      } finally {
+        setLoading(false);
+      }
+    }
+    loadData();
+  }, [isAdminOrHr, employees, departments]);
 
-  const departments = new Set(
-    employees.map((emp) => emp.department)
-  ).size;
+  const handleCheckIn = async () => {
+    setPunching(true);
+    setPunchMsg(null);
+    try {
+      await checkIn();
+      setPunchMsg({ type: 'success', text: 'Checked in successfully.' });
+      const logs = await getMyAttendance();
+      setMyAttendance(logs || []);
+    } catch (err: any) {
+      setPunchMsg({
+        type: 'error',
+        text: err?.response?.data?.message || 'Check-in failed.',
+      });
+    } finally {
+      setPunching(false);
+    }
+  };
+
+  const handleCheckOut = async () => {
+    setPunching(true);
+    setPunchMsg(null);
+    try {
+      await checkOut();
+      setPunchMsg({ type: 'success', text: 'Checked out successfully.' });
+      const logs = await getMyAttendance();
+      setMyAttendance(logs || []);
+    } catch (err: any) {
+      setPunchMsg({
+        type: 'error',
+        text: err?.response?.data?.message || 'Check-out failed.',
+      });
+    } finally {
+      setPunching(false);
+    }
+  };
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
+      <div className="border-b border-slate-200 pb-4">
+        <h1 className="text-xl font-bold text-slate-800">
+          Welcome, {user?.name || user?.email || 'User'}
+        </h1>
+        <p className="text-sm text-slate-500 mt-0.5">Overview of system operations.</p>
+      </div>
 
-      <DashboardHeader
-        totalEmployees={totalEmployees}
-        activeEmployees={activeEmployees}
-        inactiveEmployees={inactiveEmployees}
-        departments={departments}
-        openForm={() => {}}
-      />
-
-      {/* Welcome Card */}
-
-      <Card className="overflow-hidden border-0 shadow-lg">
-        <div className="bg-gradient-to-r from-blue-600 to-indigo-600 p-8 text-white">
-          <h1 className="text-3xl font-bold">
-            Welcome 👋
-          </h1>
-
-          <p className="mt-3 max-w-3xl text-blue-100 leading-7">
-            Manage your employees, departments, and
-            workforce efficiently from one centralized
-            dashboard.
-          </p>
+      {punchMsg && (
+        <div
+          className={`p-3 rounded-lg text-sm font-medium ${
+            punchMsg.type === 'success'
+              ? 'bg-green-50 text-green-700 border border-green-200'
+              : 'bg-red-50 text-red-700 border border-red-200'
+          }`}
+        >
+          {punchMsg.text}
         </div>
+      )}
 
-        <CardContent className="p-8">
-          <div className="grid gap-6 md:grid-cols-2">
+      {isAdminOrHr ? (
+        <>
+          <DashboardHeader summary={summary} loading={loading} />
 
-            <div className="rounded-xl border bg-white p-6 shadow-sm transition hover:-translate-y-1 hover:shadow-lg">
+          <div className="grid gap-4 md:grid-cols-3 pt-2">
+            <Link
+              to="/employees"
+              className="rounded-xl border border-slate-200 bg-white p-5 hover:border-indigo-500 hover:shadow-xs transition-all"
+            >
+              <h2 className="text-base font-semibold text-slate-800">Employee Directory</h2>
+              <p className="text-xs text-slate-500 mt-1">Manage staff records and information.</p>
+            </Link>
 
-              <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-blue-100">
-                <FaUsers className="text-xl text-blue-600" />
-              </div>
+            <Link
+              to="/departments"
+              className="rounded-xl border border-slate-200 bg-white p-5 hover:border-indigo-500 hover:shadow-xs transition-all"
+            >
+              <h2 className="text-base font-semibold text-slate-800">Departments</h2>
+              <p className="text-xs text-slate-500 mt-1">Manage organizational units and divisions.</p>
+            </Link>
 
-              <h2 className="text-xl font-semibold text-slate-800">
-                Employee Management
-              </h2>
-
-              <p className="mt-3 text-slate-600 leading-7">
-                Add, update, delete and search employee
-                records with an easy-to-use interface.
-              </p>
+            <Link
+              to="/attendance"
+              className="rounded-xl border border-slate-200 bg-white p-5 hover:border-indigo-500 hover:shadow-xs transition-all"
+            >
+              <h2 className="text-base font-semibold text-slate-800">Attendance & Leaves</h2>
+              <p className="text-xs text-slate-500 mt-1">View attendance records and leave applications.</p>
+            </Link>
+          </div>
+        </>
+      ) : (
+        <div className="grid gap-4 md:grid-cols-2">
+          <div className="rounded-xl border border-slate-200 bg-white p-5 space-y-4">
+            <div>
+              <h2 className="text-base font-semibold text-slate-800">Daily Attendance</h2>
+              <p className="text-xs text-slate-500 mt-0.5">Punch in and out for your shift.</p>
             </div>
-
-            <div className="rounded-xl border bg-white p-6 shadow-sm transition hover:-translate-y-1 hover:shadow-lg">
-
-              <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-purple-100">
-                <FaChartLine className="text-xl text-purple-600" />
-              </div>
-
-              <h2 className="text-xl font-semibold text-slate-800">
-                Dashboard Analytics
-              </h2>
-
-              <p className="mt-3 text-slate-600 leading-7">
-                View employee statistics, department
-                distribution and workforce insights.
-              </p>
-
+            <div className="flex gap-3">
+              <button
+                onClick={handleCheckIn}
+                disabled={punching}
+                className="flex-1 rounded-lg bg-green-600 px-4 py-2 text-sm font-semibold text-white hover:bg-green-700 disabled:opacity-50"
+              >
+                Clock In
+              </button>
+              <button
+                onClick={handleCheckOut}
+                disabled={punching}
+                className="flex-1 rounded-lg bg-slate-800 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-900 disabled:opacity-50"
+              >
+                Clock Out
+              </button>
             </div>
-
           </div>
 
-          {/* Quick Statistics */}
-
-          <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-
-            <div className="rounded-xl bg-blue-50 p-5">
-              <FaUsers className="mb-3 text-2xl text-blue-600" />
-
-              <p className="text-sm text-slate-500">
-                Total Employees
-              </p>
-
-              <h2 className="mt-1 text-3xl font-bold text-slate-800">
-                {totalEmployees}
-              </h2>
+          <div className="rounded-xl border border-slate-200 bg-white p-5 flex flex-col justify-between">
+            <div>
+              <h2 className="text-base font-semibold text-slate-800">My Attendance Records</h2>
+              <p className="text-xs text-slate-500 mt-0.5">Total recorded logs: {myAttendance.length}</p>
             </div>
-
-            <div className="rounded-xl bg-green-50 p-5">
-              <FaUserCheck className="mb-3 text-2xl text-green-600" />
-
-              <p className="text-sm text-slate-500">
-                Active Employees
-              </p>
-
-              <h2 className="mt-1 text-3xl font-bold text-slate-800">
-                {activeEmployees}
-              </h2>
-            </div>
-
-            <div className="rounded-xl bg-red-50 p-5">
-              <FaUserCheck className="mb-3 text-2xl text-red-600" />
-
-              <p className="text-sm text-slate-500">
-                Inactive Employees
-              </p>
-
-              <h2 className="mt-1 text-3xl font-bold text-slate-800">
-                {inactiveEmployees}
-              </h2>
-            </div>
-
-            <div className="rounded-xl bg-yellow-50 p-5">
-              <FaBuilding className="mb-3 text-2xl text-yellow-600" />
-
-              <p className="text-sm text-slate-500">
-                Departments
-              </p>
-
-              <h2 className="mt-1 text-3xl font-bold text-slate-800">
-                {departments}
-              </h2>
-            </div>
-
+            <Link
+              to="/attendance"
+              className="mt-4 inline-block text-center rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700"
+            >
+              Go to Attendance Page
+            </Link>
           </div>
-
-        </CardContent>
-      </Card>
-
+        </div>
+      )}
     </div>
   );
 }

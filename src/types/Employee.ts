@@ -1,8 +1,1 @@
-export interface Employee {
-  id: number;
-  name: string;
-  department: string;
-  designation: string;
-  email: string;
-  status: "Active" | "Inactive";
-}
+export * from './api';

@@ -1,232 +1,151 @@
-// import { useParams, Link } from "react-router-dom";
-// import { useEmployeeContext } from "../context/EmployeeContext";
-
-// function EmployeeDetails() {
-//   const { id } = useParams();
-
-//   const { employees, loading, error } = useEmployeeContext();
-
-//   if (loading) {
-//     return <h2>Loading employee details...</h2>;
-//   }
-
-//   if (error) {
-//     return <h2>{error}</h2>;
-//   }
-
-//   const employee = employees.find(
-//     (emp) => emp.id === Number(id)
-//   );
-
-//   if (!employee) {
-//     return (
-//       <>
-//         <h2>Employee Not Found</h2>
-
-//         <Link to="/employees">
-//           ← Back to Employee List
-//         </Link>
-//       </>
-//     );
-//   }
-
-//   return (
-//     <div className="form-container">
-//       <h2 className="form-title">
-//         Employee Details
-//       </h2>
-
-//       <div className="employee-info">
-//         <p><strong>ID:</strong> {employee.id}</p>
-//         <p><strong>Name:</strong> {employee.name}</p>
-//         <p><strong>Email:</strong> {employee.email}</p>
-//         <p><strong>Department:</strong> {employee.department}</p>
-//         <p><strong>Designation:</strong> {employee.designation}</p>
-//         <p><strong>Status:</strong> {employee.status}</p>
-//       </div>
-
-//       <br />
-
-//       <Link to="/employees">
-//         ← Back to Employee List
-//       </Link>
-//     </div>
-//   );
-// }
-
-// export default EmployeeDetails;
-
-
-
-
-import { useParams, Link } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import { getEmployeeById } from "../api/employeeApi";
 import { useEmployeeContext } from "../context/EmployeeContext";
-
-import {
-  Card,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-  CardContent,
-} from "@/components/ui/card";
-
-import { Button } from "@/components/ui/button";
-
-import {
-  FaUserCircle,
-  FaEnvelope,
-  FaBuilding,
-  FaBriefcase,
-  FaIdBadge,
-} from "react-icons/fa";
+import EmployeeForm from "../components/EmployeeForm";
+import type { Employee } from "../types/api";
 
 function EmployeeDetails() {
-  const { id } = useParams();
+  const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
+  const { employees, refreshEmployees } = useEmployeeContext();
+  const [employee, setEmployee] = useState<Employee | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
-  const { employees, loading, error } =
-    useEmployeeContext();
+  useEffect(() => {
+    async function load() {
+      if (!id) return;
+      const found = employees.find((e) => e.id === Number(id));
+      if (found) {
+        setEmployee(found);
+        setLoading(false);
+      } else {
+        try {
+          const fetched = await getEmployeeById(Number(id));
+          setEmployee(fetched);
+        } catch (e) {
+          console.error("Failed to load employee details", e);
+        } finally {
+          setLoading(false);
+        }
+      }
+    }
+    load();
+  }, [id, employees]);
 
   if (loading) {
     return (
-      <div className="flex h-[300px] items-center justify-center">
-        <p className="text-lg text-slate-500">
-          Loading employee details...
-        </p>
+      <div className="p-8 text-center text-sm text-slate-500">
+        Loading employee details...
       </div>
     );
   }
-
-  if (error) {
-    return (
-      <div className="rounded-lg border border-red-200 bg-red-50 p-6 text-center">
-        <h2 className="text-xl font-semibold text-red-600">
-          {error}
-        </h2>
-      </div>
-    );
-  }
-
-  const employee = employees.find(
-    (emp) => emp.id === Number(id)
-  );
 
   if (!employee) {
     return (
-      <Card className="mx-auto max-w-xl">
-        <CardContent className="py-10 text-center space-y-4">
-          <h2 className="text-2xl font-bold">
-            Employee Not Found
-          </h2>
-
-          <Button asChild>
-            <Link to="/employees">
-              ← Back to Employee List
-            </Link>
-          </Button>
-        </CardContent>
-      </Card>
+      <div className="rounded-xl border border-slate-200 bg-white p-6 text-center max-w-md mx-auto">
+        <h2 className="text-base font-bold text-slate-800">Employee Not Found</h2>
+        <button
+          onClick={() => navigate("/employees")}
+          className="mt-4 rounded-lg bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white"
+        >
+          Back to Employees
+        </button>
+      </div>
     );
   }
 
+  const fullName =
+    employee.name ||
+    `${employee.firstName || ""} ${employee.lastName || ""}`.trim() ||
+    "Employee";
+
   return (
-    <div className="mx-auto max-w-4xl">
-      <Card className="shadow-sm">
-        <CardHeader className="text-center">
-          <div className="flex justify-center">
-            <FaUserCircle className="text-7xl text-blue-600" />
+    <div className="space-y-4 max-w-3xl">
+      <div className="flex items-center justify-between">
+        <button
+          onClick={() => navigate("/employees")}
+          className="text-xs font-semibold text-slate-600 hover:text-slate-900"
+        >
+          ← Back to Employees
+        </button>
+
+        <button
+          onClick={() => setIsEditModalOpen(true)}
+          className="rounded-lg bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-indigo-700"
+        >
+          Edit Profile
+        </button>
+      </div>
+
+      <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-xs space-y-4">
+        <div className="flex items-start justify-between border-b border-slate-200 pb-4">
+          <div>
+            <h1 className="text-xl font-bold text-slate-800">{fullName}</h1>
+            <p className="text-xs text-indigo-600 font-semibold">{employee.designation}</p>
+          </div>
+          <span
+            className={`rounded px-2.5 py-0.5 text-xs font-semibold ${
+              employee.status === "ACTIVE"
+                ? "bg-green-100 text-green-800"
+                : "bg-slate-100 text-slate-700"
+            }`}
+          >
+            {employee.status}
+          </span>
+        </div>
+
+        <div className="grid gap-3 sm:grid-cols-2 text-xs">
+          <div>
+            <span className="text-slate-400 block">Employee Code</span>
+            <span className="font-semibold text-slate-800">{employee.employeeCode || `EMP-${employee.id}`}</span>
           </div>
 
-          <CardTitle className="mt-3 text-3xl">
-            {employee.name}
-          </CardTitle>
-
-          <CardDescription>
-            {employee.designation}
-          </CardDescription>
-
-          <div className="pt-2">
-            <span
-              className={`inline-flex rounded-full px-4 py-1 text-sm font-semibold ${
-                employee.status === "Active"
-                  ? "bg-green-100 text-green-700"
-                  : "bg-red-100 text-red-700"
-              }`}
-            >
-              {employee.status}
+          <div>
+            <span className="text-slate-400 block">Department</span>
+            <span className="font-semibold text-slate-800">
+              {employee.department || employee.departmentName || "General"}
             </span>
           </div>
-        </CardHeader>
 
-        <CardContent>
-          <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-
-            <div className="flex items-center gap-3 rounded-lg border p-4">
-              <FaIdBadge className="text-blue-600 text-xl" />
-
-              <div>
-                <p className="text-sm text-slate-500">
-                  Employee ID
-                </p>
-
-                <p className="font-semibold">
-                  {employee.id}
-                </p>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-3 rounded-lg border p-4">
-              <FaEnvelope className="text-blue-600 text-xl" />
-
-              <div>
-                <p className="text-sm text-slate-500">
-                  Email
-                </p>
-
-                <p className="font-semibold break-all">
-                  {employee.email}
-                </p>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-3 rounded-lg border p-4">
-              <FaBuilding className="text-blue-600 text-xl" />
-
-              <div>
-                <p className="text-sm text-slate-500">
-                  Department
-                </p>
-
-                <p className="font-semibold">
-                  {employee.department}
-                </p>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-3 rounded-lg border p-4">
-              <FaBriefcase className="text-blue-600 text-xl" />
-
-              <div>
-                <p className="text-sm text-slate-500">
-                  Designation
-                </p>
-
-                <p className="font-semibold">
-                  {employee.designation}
-                </p>
-              </div>
-            </div>
-
+          <div>
+            <span className="text-slate-400 block">Work Email</span>
+            <span className="font-semibold text-slate-800">{employee.email}</span>
           </div>
 
-          <div className="mt-8 flex justify-end">
-            <Button asChild variant="outline">
-              <Link to="/employees">
-                ← Back to Employee List
-              </Link>
-            </Button>
+          <div>
+            <span className="text-slate-400 block">Phone</span>
+            <span className="font-semibold text-slate-800">{employee.phone || employee.mobile || "—"}</span>
           </div>
-        </CardContent>
-      </Card>
+
+          <div>
+            <span className="text-slate-400 block">Date of Joining</span>
+            <span className="font-semibold text-slate-800">{employee.dateOfJoining || "—"}</span>
+          </div>
+
+          <div>
+            <span className="text-slate-400 block">Annual Salary</span>
+            <span className="font-semibold text-slate-800">
+              ${Number(employee.salary || 0).toLocaleString()} / yr
+            </span>
+          </div>
+        </div>
+      </div>
+
+      {isEditModalOpen && (
+        <EmployeeForm
+          employeeToEdit={employee}
+          onClose={() => setIsEditModalOpen(false)}
+          onSuccess={() => {
+            setIsEditModalOpen(false);
+            refreshEmployees();
+            if (id) {
+              getEmployeeById(Number(id)).then(setEmployee).catch(console.warn);
+            }
+          }}
+        />
+      )}
     </div>
   );
 }

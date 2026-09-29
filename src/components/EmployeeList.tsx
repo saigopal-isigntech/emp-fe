@@ -1,149 +1,175 @@
-// import EmployeeCard from "./EmployeeCard";
-// import { useEmployeeContext } from "../context/EmployeeContext";
-
-// function EmployeeList() {
-//   const {
-//     filteredEmployees,
-//     deleteEmployee,
-//     toggleStatus,
-//   } = useEmployeeContext();
-
-//   if (filteredEmployees.length === 0) {
-//     return (
-//       <div className="empty-state">
-//         <h2>No Employees Found</h2>
-//         <p>Try changing the search or filter.</p>
-//       </div>
-//     );
-//   }
-
-//   return (
-//     <div className="employee-grid">
-//       {filteredEmployees.map((employee) => (
-//         <EmployeeCard
-//           key={employee.id}
-//           employee={employee}
-//           // deleteEmployee={deleteEmployee}
-//           // toggleStatus={toggleStatus}
-//         />
-//       ))}
-//     </div>
-//   );
-// }
-
-// export default EmployeeList;
-
-
-// import EmployeeCard from "./EmployeeCard";
-// import { useEmployeeContext } from "../context/EmployeeContext";
-
-// function EmployeeList() {
-//   const { filteredEmployees } = useEmployeeContext();
-
-//   if (filteredEmployees.length === 0) {
-//     return (
-//       <div className="flex min-h-[300px] flex-col items-center justify-center rounded-xl border border-dashed border-slate-300 bg-white p-10 text-center shadow-sm">
-//         <h2 className="text-2xl font-bold text-slate-700">
-//           No Employees Found
-//         </h2>
-
-//         <p className="mt-2 text-slate-500">
-//           Try changing the search keyword or filter options.
-//         </p>
-//       </div>
-//     );
-//   }
-
-//   return (
-//     <div
-//       className="
-//         grid
-//         grid-cols-1
-//         gap-6
-//         md:grid-cols-2
-//         xl:grid-cols-3
-//         2xl:grid-cols-4
-//       "
-//     >
-//       {filteredEmployees.map((employee) => (
-//         <EmployeeCard
-//           key={employee.id}
-//           employee={employee}
-//         />
-//       ))}
-//     </div>
-//   );
-// }
-
-// export default EmployeeList;
-
-
-
-
+import { useState } from "react";
 import EmployeeCard from "./EmployeeCard";
 import { useEmployeeContext } from "../context/EmployeeContext";
-import { FaUsers } from "react-icons/fa";
+import { useAuth } from "../context/AuthContext";
+import type { Employee } from "../types/api";
+import { useNavigate } from "react-router-dom";
 
-function EmployeeList() {
-  const { filteredEmployees } = useEmployeeContext();
+interface EmployeeListProps {
+  onEditEmployee?: (employee: Employee) => void;
+  onOpenAddModal?: () => void;
+}
+
+function EmployeeList({ onEditEmployee, onOpenAddModal }: EmployeeListProps) {
+  const { filteredEmployees, employees, loading, deleteEmployee, toggleStatus } = useEmployeeContext();
+  const { currentRole } = useAuth();
+  const isAdmin = currentRole === "ADMIN";
+  const navigate = useNavigate();
+
+  const [viewMode, setViewMode] = useState<"table" | "cards">("table");
+
+  if (loading && employees.length === 0) {
+    return (
+      <div className="rounded-xl border border-slate-200 bg-white p-8 text-center text-sm text-slate-500">
+        Loading employee records...
+      </div>
+    );
+  }
 
   if (filteredEmployees.length === 0) {
     return (
-      <div className="flex min-h-[400px] flex-col items-center justify-center rounded-2xl border-2 border-dashed border-slate-300 bg-white p-10 shadow-md">
-        <div className="mb-5 flex h-20 w-20 items-center justify-center rounded-full bg-slate-100">
-          <FaUsers className="text-4xl text-slate-400" />
-        </div>
-
-        <h2 className="text-2xl font-bold text-slate-800">
-          No Employees Found
-        </h2>
-
-        <p className="mt-3 max-w-md text-center text-slate-500">
-          No employee records match your current search or filter.
-          Try changing the search keyword or selecting different
-          filter options.
-        </p>
+      <div className="rounded-xl border border-dashed border-slate-300 bg-white p-8 text-center">
+        <p className="text-sm font-semibold text-slate-700">No employees found</p>
+        <p className="text-xs text-slate-500 mt-1">Try changing your search query or filters.</p>
+        {onOpenAddModal && (
+          <button
+            onClick={onOpenAddModal}
+            className="mt-3 rounded-lg bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-indigo-700"
+          >
+            Add Employee
+          </button>
+        )}
       </div>
     );
   }
 
   return (
-    <section className="space-y-6">
-      {/* Section Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-2xl font-bold text-slate-800">
-            Employee Directory
-          </h2>
+    <section className="space-y-3">
+      <div className="flex items-center justify-between text-xs text-slate-500 font-medium">
+        <span>
+          Showing {filteredEmployees.length} of {employees.length} employees
+        </span>
 
-          <p className="mt-1 text-sm text-slate-500">
-            Showing{" "}
-            <span className="font-semibold text-blue-600">
-              {filteredEmployees.length}
-            </span>{" "}
-            employee{filteredEmployees.length !== 1 ? "s" : ""}
-          </p>
+        <div className="flex gap-1 border border-slate-200 rounded-lg p-0.5 bg-white">
+          <button
+            onClick={() => setViewMode("table")}
+            className={`px-2.5 py-1 rounded text-xs ${
+              viewMode === "table" ? "bg-slate-800 text-white font-semibold" : "text-slate-600 hover:bg-slate-100"
+            }`}
+          >
+            Table
+          </button>
+          <button
+            onClick={() => setViewMode("cards")}
+            className={`px-2.5 py-1 rounded text-xs ${
+              viewMode === "cards" ? "bg-slate-800 text-white font-semibold" : "text-slate-600 hover:bg-slate-100"
+            }`}
+          >
+            Cards
+          </button>
         </div>
       </div>
 
-      {/* Employee Grid */}
-      <div
-        className="
-          grid
-          gap-6
-          grid-cols-1
-          sm:grid-cols-2
-          xl:grid-cols-3
-          2xl:grid-cols-4
-        "
-      >
-        {filteredEmployees.map((employee) => (
-          <EmployeeCard
-            key={employee.id}
-            employee={employee}
-          />
-        ))}
-      </div>
+      {viewMode === "cards" ? (
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {filteredEmployees.map((emp) => (
+            <EmployeeCard key={emp.id} employee={emp} onEdit={onEditEmployee} />
+          ))}
+        </div>
+      ) : (
+        <div className="rounded-xl border border-slate-200 bg-white overflow-hidden shadow-xs">
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-xs border-collapse">
+              <thead>
+                <tr className="border-b border-slate-200 bg-slate-50 text-slate-600 font-semibold">
+                  <th className="px-4 py-3">Code</th>
+                  <th className="px-4 py-3">Name</th>
+                  <th className="px-4 py-3">Department</th>
+                  <th className="px-4 py-3">Designation</th>
+                  <th className="px-4 py-3">Email</th>
+                  <th className="px-4 py-3">Status</th>
+                  <th className="px-4 py-3 text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100">
+                {filteredEmployees.map((emp) => {
+                  const fullName =
+                    emp.name ||
+                    `${emp.firstName || ""} ${emp.lastName || ""}`.trim() ||
+                    "Employee";
+
+                  return (
+                    <tr key={emp.id} className="hover:bg-slate-50">
+                      <td className="px-4 py-3 font-mono text-slate-500">
+                        {emp.employeeCode || `#${emp.id}`}
+                      </td>
+                      <td className="px-4 py-3 font-semibold text-slate-800">
+                        <button
+                          onClick={() => navigate(`/employees/${emp.id}`)}
+                          className="hover:text-indigo-600 text-left"
+                        >
+                          {fullName}
+                        </button>
+                      </td>
+                      <td className="px-4 py-3 text-slate-600">
+                        {emp.department || emp.departmentName || "General"}
+                      </td>
+                      <td className="px-4 py-3 text-slate-600">{emp.designation}</td>
+                      <td className="px-4 py-3 text-slate-600">{emp.email}</td>
+                      <td className="px-4 py-3">
+                        <button
+                          onClick={() => emp.id && toggleStatus(emp.id)}
+                          className="cursor-pointer"
+                        >
+                          <span
+                            className={`rounded px-2 py-0.5 text-[11px] font-semibold ${
+                              emp.status === "ACTIVE"
+                                ? "bg-green-100 text-green-800"
+                                : emp.status === "ON_LEAVE"
+                                ? "bg-amber-100 text-amber-800"
+                                : "bg-slate-100 text-slate-700"
+                            }`}
+                          >
+                            {emp.status}
+                          </span>
+                        </button>
+                      </td>
+                      <td className="px-4 py-3 text-right space-x-2">
+                        {onEditEmployee && (
+                          <button
+                            onClick={() => onEditEmployee(emp)}
+                            className="text-indigo-600 hover:underline font-medium"
+                          >
+                            Edit
+                          </button>
+                        )}
+                        {isAdmin && (
+                          <button
+                            onClick={() =>
+                              emp.id &&
+                              window.confirm(`Delete employee "${fullName}"?`) &&
+                              deleteEmployee(emp.id)
+                            }
+                            className="text-red-600 hover:underline font-medium"
+                          >
+                            Delete
+                          </button>
+                        )}
+                        <button
+                          onClick={() => navigate(`/employees/${emp.id}`)}
+                          className="text-slate-600 hover:underline font-medium"
+                        >
+                          View
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
     </section>
   );
 }

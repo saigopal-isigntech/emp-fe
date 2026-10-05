@@ -15,20 +15,23 @@ export const checkOut = async (): Promise<Attendance> => {
 export const getMyAttendance = async (): Promise<Attendance[]> => {
   const res = await api.get<any>("/attendance/my");
   const data = res.data?.data ?? res.data;
-  return Array.isArray(data) ? data : [];
+  if (!Array.isArray(data)) return [];
+  return [...data].sort((a, b) => (b.id || 0) - (a.id || 0));
 };
 
 export const getAttendanceByEmployee = async (employeeId: number): Promise<Attendance[]> => {
   const res = await api.get<any>(`/attendance/employee/${employeeId}`);
   const data = res.data?.data ?? res.data;
-  return Array.isArray(data) ? data : [];
+  if (!Array.isArray(data)) return [];
+  return [...data].sort((a, b) => (b.id || 0) - (a.id || 0));
 };
 
 export const getAttendanceByDate = async (date?: string): Promise<Attendance[]> => {
   const dateParam = date || new Date().toISOString().split("T")[0];
   const res = await api.get<any>(`/attendance/date/${dateParam}`);
   const data = res.data?.data ?? res.data;
-  return Array.isArray(data) ? data : [];
+  if (!Array.isArray(data)) return [];
+  return [...data].sort((a, b) => (b.id || 0) - (a.id || 0));
 };
 
 export const getAllAttendance = async (): Promise<Attendance[]> => {

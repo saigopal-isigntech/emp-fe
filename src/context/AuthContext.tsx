@@ -1,6 +1,6 @@
-﻿import { createContext, useContext, useState, useCallback, type ReactNode } from "react";
+import { createContext, useContext, useState, useCallback, type ReactNode } from "react";
 import type { AuthUser } from "../types/api";
-import { login as loginApi, register as registerApi } from "../api/authApi";
+import { login as loginApi, register as registerApi, type RegisterPayload } from "../api/authApi";
 
 export interface DemoAccount {
   role: "ADMIN" | "HR" | "EMPLOYEE";
@@ -22,7 +22,7 @@ interface AuthContextType {
   isLoading: boolean;
   currentRole: string;
   login: (email: string, pass: string) => Promise<void>;
-  register: (name: string, email: string, pass: string) => Promise<string>;
+  register: (payload: RegisterPayload | string, email?: string, pass?: string) => Promise<string>;
   logout: () => void;
   switchDemoRole: (role: "ADMIN" | "HR" | "EMPLOYEE") => Promise<void>;
 }
@@ -43,7 +43,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     return localStorage.getItem("ems_token") || null;
   });
 
-  // isLoading is only true while a login/register call is in-flight
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
   const loginWithCredentials = useCallback(async (email: string, pass: string) => {
@@ -63,8 +62,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   }, []);
 
-  const registerUser = useCallback(async (name: string, email: string, pass: string): Promise<string> => {
-    return await registerApi({ name, email, password: pass });
+  const registerUser = useCallback(async (payload: RegisterPayload | string, email?: string, pass?: string): Promise<string> => {
+    if (typeof payload === "string") {
+      return await registerApi({ name: payload, email: email || "", password: pass || "" });
+    }
+    return await registerApi(payload);
   }, []);
 
   const logout = useCallback(() => {
@@ -81,8 +83,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   }, [loginWithCredentials]);
 
-  // Derive current role from user roles array.
-  // Backend returns roles like ["ADMIN"], ["HR"], ["EMPLOYEE"] (no ROLE_ prefix in the JSON).
   const rawRole = user?.roles?.[0] || "";
   const currentRole = rawRole.replace("ROLE_", "") || (user ? "EMPLOYEE" : "GUEST");
 

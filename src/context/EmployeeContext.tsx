@@ -37,7 +37,9 @@ interface EmployeeContextType {
 const EmployeeContext = createContext<EmployeeContextType | undefined>(undefined);
 
 export function EmployeeProvider({ children }: { children: ReactNode }) {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, currentRole } = useAuth();
+  const isAdminOrHr = currentRole === 'ADMIN' || currentRole === 'HR';
+
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [departments, setDepartments] = useState<Department[]>([]);
   const [loading, setLoading] = useState(false);
@@ -49,36 +51,38 @@ export function EmployeeProvider({ children }: { children: ReactNode }) {
 
   const refreshEmployees = useCallback(async () => {
     if (!isAuthenticated) return;
+    if (!isAdminOrHr) {
+      setEmployees([]);
+      return;
+    }
     setLoading(true);
     setError(null);
     try {
       const paged = await getAllEmployees({ size: 100 });
       setEmployees(Array.isArray(paged.content) ? paged.content.map(normalizeEmployee) : []);
     } catch (err: any) {
-      console.error("Failed to load employees", err);
-      const msg = err?.response?.data?.message || err?.message || "Failed to load employees from backend.";
-      setError(msg);
+      console.warn("Failed to load employees", err?.message);
     } finally {
       setLoading(false);
     }
-  }, [isAuthenticated]);
+  }, [isAuthenticated, isAdminOrHr]);
 
   const refreshDepartments = useCallback(async () => {
     if (!isAuthenticated) return;
     try {
       const depts = await getDepartments();
-      setDepartments(depts);
+      setDepartments(depts || []);
     } catch (err) {
       console.warn("Failed to load departments", err);
     }
   }, [isAuthenticated]);
 
   useEffect(() => {
-    if (isAuthenticated) {
+    if (isAuthenticated && isAdminOrHr) {
       refreshEmployees();
       refreshDepartments();
     }
-  }, [isAuthenticated, refreshEmployees, refreshDepartments]);
+  }, [isAuthenticated, isAdminOrHr, refreshEmployees, refreshDepartments]);
 
   const addEmployee = async (employeeData: Partial<Employee>): Promise<Employee> => {
     const created = await createEmployeeApi(employeeData);

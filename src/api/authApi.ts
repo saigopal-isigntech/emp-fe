@@ -1,5 +1,5 @@
 import api from "./axios";
-import type { AuthUser } from "../types/api";
+import type { AuthUser, Department } from "../types/api";
 
 export interface LoginPayload {
   email?: string;
@@ -11,6 +11,10 @@ export interface RegisterPayload {
   name: string;
   email: string;
   password: string;
+  departmentId?: number;
+  departmentName?: string;
+  phone?: string;
+  designation?: string;
 }
 
 export const login = async (payload: LoginPayload): Promise<AuthUser> => {
@@ -34,6 +38,29 @@ export const register = async (payload: RegisterPayload): Promise<string> => {
     name: payload.name,
     email: payload.email,
     password: payload.password,
+    departmentId: payload.departmentId,
+    departmentName: payload.departmentName,
+    phone: payload.phone,
+    designation: payload.designation,
   });
   return typeof res.data === "string" ? res.data : (res.data?.data || "User registered successfully");
+};
+
+export const getPublicDepartments = async (): Promise<Department[]> => {
+  try {
+    const res = await api.get("/auth/departments");
+    return res.data?.data ?? res.data ?? [];
+  } catch {
+    try {
+      const res = await api.get("/departments");
+      return res.data?.data ?? res.data ?? [];
+    } catch {
+      return [
+        { id: 1, name: "IT", description: "Information Technology", status: "ACTIVE" },
+        { id: 2, name: "General", description: "General Department", status: "ACTIVE" },
+        { id: 3, name: "Sales", description: "Sales & Account Management", status: "ACTIVE" },
+        { id: 4, name: "Marketing", description: "Marketing & Communications", status: "ACTIVE" },
+      ];
+    }
+  }
 };

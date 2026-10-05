@@ -1,7 +1,7 @@
 export type EmployeeStatus = "ACTIVE" | "INACTIVE" | "ON_LEAVE" | "TERMINATED";
 export type DepartmentStatus = "ACTIVE" | "INACTIVE";
 export type AttendanceStatus = "PRESENT" | "ABSENT" | "LATE" | "HALF_DAY";
-export type LeaveType = "CASUAL" | "SICK" | "ANNUAL" | "MATERNITY" | "PATERNITY" | "UNPAID";
+export type LeaveType = "CASUAL" | "SICK" | "UNPAID";
 export type LeaveStatus = "PENDING" | "APPROVED" | "REJECTED" | "CANCELLED";
 
 export interface ApiResponse<T> {
@@ -112,4 +112,25 @@ export interface AuthUser {
   token: string;
   tokenType?: string;
   accessToken?: string;
+}
+
+export interface LeaveBalanceItem {
+  leaveType: LeaveType;
+  totalQuota: number;
+  usedDays: number;
+  pendingDays: number;
+  remainingDays: number;
+}
+
+export interface LeaveBalanceResponse {
+  employeeId: number;
+  employeeName: string;
+  year: number;
+  balances: LeaveBalanceItem[];
+}
+
+export interface LeavePolicy {
+  year: number;
+  casualQuota: number;
+  sickQuota: number;
 }

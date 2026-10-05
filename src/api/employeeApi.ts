@@ -48,6 +48,12 @@ export const getEmployeeById = async (id: number): Promise<Employee> => {
   return normalizeEmployee(data);
 };
 
+export const getMyProfile = async (): Promise<Employee> => {
+  const res = await api.get<any>("/employees/me");
+  const data = res.data?.data ?? res.data;
+  return normalizeEmployee(data);
+};
+
 export const createEmployee = async (data: Partial<Employee>): Promise<Employee> => {
   let resolvedUserId = Number(data.userId);
   if (!resolvedUserId || isNaN(resolvedUserId)) {

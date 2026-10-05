@@ -1,5 +1,5 @@
 import api from "./axios";
-import type { LeaveRequest, LeaveType, LeaveStatus } from "../types/api";
+import type { LeaveRequest, LeaveType, LeaveStatus, LeaveBalanceResponse, LeavePolicy } from "../types/api";
 
 export interface ApplyLeavePayload {
   employeeId?: number;
@@ -45,19 +45,22 @@ export const getMyLeaves = async (employeeId?: number): Promise<LeaveRequest[]> 
 
   const res = await api.get<any>(`/leaves/employee/${resolvedEmpId}`);
   const data = res.data?.data ?? res.data;
-  return Array.isArray(data) ? data : [];
+  if (!Array.isArray(data)) return [];
+  return [...data].sort((a, b) => (b.id || 0) - (a.id || 0));
 };
 
 export const getLeavesByEmployee = async (employeeId: number): Promise<LeaveRequest[]> => {
   const res = await api.get<any>(`/leaves/employee/${employeeId}`);
   const data = res.data?.data ?? res.data;
-  return Array.isArray(data) ? data : [];
+  if (!Array.isArray(data)) return [];
+  return [...data].sort((a, b) => (b.id || 0) - (a.id || 0));
 };
 
 export const getAllLeaves = async (): Promise<LeaveRequest[]> => {
   const res = await api.get<any>("/leaves");
   const data = res.data?.data ?? res.data;
-  return Array.isArray(data) ? data : [];
+  if (!Array.isArray(data)) return [];
+  return [...data].sort((a, b) => (b.id || 0) - (a.id || 0));
 };
 
 export const getLeavesByStatus = async (status: LeaveStatus): Promise<LeaveRequest[]> => {
@@ -87,5 +90,37 @@ export const rejectLeave = async (id: number, reason: string): Promise<LeaveRequ
       rejectionReason: reason || "Rejected by reviewer",
     },
   });
+  return res.data?.data ?? res.data;
+};
+
+export const getMyLeaveBalance = async (year?: number): Promise<LeaveBalanceResponse | null> => {
+  try {
+    const res = await api.get<any>("/leaves/balance/my", { params: { year } });
+    return res.data?.data ?? res.data;
+  } catch {
+    return null;
+  }
+};
+
+export const getLeaveBalanceByEmployee = async (employeeId: number, year?: number): Promise<LeaveBalanceResponse | null> => {
+  try {
+    const res = await api.get<any>(`/leaves/balance/${employeeId}`, { params: { year } });
+    return res.data?.data ?? res.data;
+  } catch {
+    return null;
+  }
+};
+
+export const getLeavePolicy = async (year?: number): Promise<LeavePolicy | null> => {
+  try {
+    const res = await api.get<any>("/leaves/policy", { params: { year } });
+    return res.data?.data ?? res.data;
+  } catch {
+    return null;
+  }
+};
+
+export const updateLeavePolicy = async (payload: LeavePolicy): Promise<LeavePolicy> => {
+  const res = await api.put<any>("/leaves/policy", payload);
   return res.data?.data ?? res.data;
 };
